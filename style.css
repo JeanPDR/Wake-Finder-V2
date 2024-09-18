@@ -1,0 +1,134 @@
+:root {
+  --accent: #bf05ea;
+  --light: #ffffff;
+  --dark: #000000;
+  --font-size-base: 12px;
+  --header-height: 30px;
+  --loader-size: 50px;
+  --button-padding: 5px 10px;
+  --string-color: #007700;
+  --number-color: #0000ff;
+  --boolean-color: #cc00ad;
+  --object-syntax-color: #000000;
+  --array-syntax-color: #ff8000;
+  --disclosure-color: #00477f;
+}
+
+body {
+  margin: 0;
+  font-size: var(--font-size-base);
+  min-width: 200px;
+  min-height: 130px;
+  background-color: var(--light);
+  color: var(--dark);
+  font-family: Arial, sans-serif;
+}
+
+#popup-container {
+  padding: 10px;
+  background-color: var(--light);
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  margin-top: 0;
+  color: var(--accent);
+  font-size: 16px;
+}
+
+p {
+  font-size: var(--font-size-base);
+  margin: 5px 0;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--accent);
+  color: var(--light);
+  height: var(--header-height);
+  padding: 0 10px;
+  border-radius: 4px 4px 0 0;
+}
+
+#headline {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+#icons {
+  display: flex;
+  align-items: center;
+  min-width: 50px;
+  justify-content: flex-end;
+}
+
+#icons a {
+  font-size: 12px;
+  color: var(--shady);
+  text-decoration: none;
+  margin-left: 10px;
+}
+
+#details {
+  padding: 10px;
+}
+
+#data {
+  border-top: 1px solid var(--accent);
+  padding: 10px;
+  background-color: var(--shady);
+  border-radius: 4px;
+}
+
+#version {
+  position: fixed;
+  padding: 5px;
+  bottom: 0;
+  right: 0;
+  font-size: 8px;
+  color: var(--accent);
+}
+
+#loadercontainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20%;
+}
+
+#loader {
+  border: 5px solid var(--shady);
+  border-top: 5px solid var(--accent);
+  border-radius: 50%;
+  width: var(--loader-size);
+  height: var(--loader-size);
+  animation: spin 1s linear infinite;
+}
+
+button {
+  background: var(--shady);
+  border: none;
+  padding: var(--button-padding);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background: var(--accent);
+  color: var(--light);
+}
+
+button:active,
+button:focus {
+  outline: none;
+}
+
+.activated {
+  background: var(--accent);
+  color: var(--light);
+  outline: none;
+}

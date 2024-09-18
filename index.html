@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="style.css" />
+    <title>Wake Finder</title>
+  </head>
+  <body>
+    <div id="popup-container">
+      <h2>Wake Finder</h2>
+      <p>Resultado</p>
+      <div id="requests-table"></div>
+      <button id="clear-requests">Limpar</button>
+      <div id="integration-message" style="display: none">
+        Esta página não contém integração com BTG
+      </div>
+
+      <!-- Nova seção para Integrações Mínimas (socl) -->
+      <div id="minimal-integrations-container">
+        <h2>Integrações Mínimas</h2>
+        <p id="socl-status">Verificando integrações...</p>
+      </div>
+
+      <!-- Nova seção para Workflow (_work) -->
+      <div id="workflow-container">
+        <h2>Workflow</h2>
+        <p id="work-status">Verificando workflow...</p>
+      </div>
+
+      <!-- Seção GTM -->
+      <div id="gtm-container">
+        <h2>Google Tag Manager</h2>
+        <p id="gtm-status">Verificando...</p>
+      </div>
+
+      <!-- Seção DataLayer -->
+      <div id="datalayer-container">
+        <header>
+          <div id="headline">Datalayer</div>
+          <div id="icons">
+            <span id="feedback"></span>
+          </div>
+        </header>
+        <main>
+          <div id="loadercontainer">
+            <div id="loader"></div>
+          </div>
+
+          <!-- Campo de filtro para o DataLayer -->
+          <div>
+            <input
+              type="text"
+              id="filter-input"
+              placeholder="Digite o filtro (ex: 'ecommerce.items')"
+            />
+            <button id="apply-filter">Aplicar Filtro</button>
+          </div>
+
+          <!-- Exibição do DataLayer -->
+          <div id="datalayer-output"></div>
+        </main>
+      </div>
+    </div>
+
+    <script type="module" src="./main.js"></script>
+    <script src="./DataLayer/renderjson.js"></script>
+    <script src="./DataLayer/popup.js"></script>
+    <script src="./background.js"></script>
+  </body>
+</html>
