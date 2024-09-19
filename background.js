@@ -1,4 +1,5 @@
-// background.js
+// Definindo variáveis e padrões
+let requests = [];
 
 const defaults = {
   dataLayer1: "dataLayer",
@@ -7,6 +8,39 @@ const defaults = {
   dataLayer4: "utag_data",
   dataLayer5: "udo",
 };
+
+// Função para tentar parsear o JSON e evitar erros
+function tryParseJSON(jsonString) {
+  try {
+    return JSON.parse(jsonString);
+  } catch (e) {
+    return null; // Se não for JSON, retorna null
+  }
+}
+
+// Função para verificar se a URL corresponde ao padrão desejado (URL específica)
+function isTargetUrl(url) {
+  return url.includes(
+    "https://wonka.socialminer.com/ursa/enterprise/behaviors"
+  );
+}
+
+// Função para adicionar a requisição capturada e exibir no popup (URL específica)
+function addRequest(details, requestBody) {
+  let parsedRequestBody = tryParseJSON(requestBody) || requestBody; // Se não for JSON, mantém o conteúdo bruto
+
+  let payload = {
+    url: details.url,
+    method: details.method,
+    requestBody: parsedRequestBody,
+  };
+
+  // Armazena a requisição capturada
+  requests.push(payload);
+
+  // Armazena no storage local para ser usado no popup
+  chrome.storage.local.set({ networkRequests: requests });
+}
 
 // Ao instalar a extensão
 chrome.runtime.onInstalled.addListener(() => {
@@ -135,6 +169,20 @@ chrome.webRequest.onBeforeRequest.addListener(
         });
         chrome.storage.local.set({ requests: requests });
       });
+    }
+
+    // Verificar URL específica de comportamentos
+    if (isTargetUrl(details.url)) {
+      let requestBody = null;
+
+      if (details.requestBody && details.requestBody.raw) {
+        // Tenta decodificar o corpo da requisição se for válido
+        requestBody = new TextDecoder("utf-8").decode(
+          details.requestBody.raw[0].bytes
+        );
+      }
+
+      addRequest(details, requestBody); // Adiciona requisição com o corpo
     }
   },
   { urls: ["<all_urls>"] },
