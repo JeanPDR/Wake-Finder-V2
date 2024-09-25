@@ -1,84 +1,16 @@
 document.addEventListener("DOMContentLoaded", function () {
   const requestsTable = document.getElementById("requests-table");
   const clearButton = document.getElementById("clear-requests");
-  const integrationMessage = document.getElementById("integration-message");
   const gtmStatus = document.getElementById("gtm-status");
   const datalayerContent = document.getElementById("datalayer-output");
+  const loadDataLayerButton = document.getElementById("loadDataLayerButton");
+  const behaviorsOutput = document.getElementById("behaviors-output");
+  const workflowOutput = document.getElementById("workflow-output");
+  const workStatus = document.getElementById("work-status");
 
-  // Função para alternar a exibição dos detalhes do payload
-  function togglePayload(event) {
-    const payloadDetails = event.target.nextElementSibling;
-    payloadDetails.style.display =
-      payloadDetails.style.display === "none" ? "block" : "none";
-  }
-
-  function organizeData(rawData) {
-    return rawData
-      .replace(/:\s+/g, ": ") // Garante que haja apenas um espaço após os dois-pontos
-      .split("\n") // Usa a quebra de linha como delimitador principal
-      .map((line) => line.trim()) // Remove espaços desnecessários ao redor
-      .reduce((acc, line) => {
-        if (line.includes(":")) {
-          const [key, ...value] = line.split(": ");
-          const joinedValue = value.join(": ");
-          acc.push(`${key}: ${joinedValue.trim()}`);
-        }
-        return acc;
-      }, [])
-      .join("\n");
-  }
-
-  // Função que exibe as requisições armazenadas no localStorage
-  function displayRequests() {
-    chrome.storage.local.get(
-      { requests: [], integrationFound: false },
-      function (data) {
-        requestsTable.innerHTML = ""; // Limpa a tabela de requisições
-        let noValidTagFound = true;
-
-        // Percorre todas as requisições armazenadas
-        data.requests.forEach((request) => {
-          const row = document.createElement("div");
-          row.classList.add(
-            request.valid ? "valid-request" : "invalid-request"
-          );
-
-          if (request.valid) noValidTagFound = false;
-
-          let tagMessage = "Não contém tag válida";
-          if (request.tag === "client")
-            tagMessage = "Nesta página contém a tag client";
-          else if (request.tag === "product")
-            tagMessage = "Nesta página contém tag de produto";
-          else if (request.tag === "cart")
-            tagMessage = "Nesta página contém tag de carrinho";
-          else if (request.tag === "order")
-            tagMessage = "Nesta página contém a tag de order";
-
-          const organizedPayload = organizeData(request.payload);
-          row.innerHTML = `
-            <div>${tagMessage}
-              <div>
-                <button class="toggle-payload">Detalhes</button>
-                <div class="payload-details" style="display:none; white-space: pre-wrap;">${organizedPayload}</div>
-              </div>
-            </div>`;
-          requestsTable.appendChild(row);
-        });
-
-        document.querySelectorAll(".toggle-payload").forEach((button) => {
-          button.addEventListener("click", togglePayload);
-        });
-
-        integrationMessage.style.display = data.integrationFound
-          ? "none"
-          : "block";
-      }
-    );
-  }
-
-  // Função para verificar a presença do GTM
+  // Função para verificar o GTM
   function checkGTM() {
+    gtmStatus.textContent = "Recarregando GTM...";
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       chrome.scripting.executeScript(
         {
@@ -101,34 +33,96 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Função para obter o conteúdo do dataLayer
-  function getDataLayer() {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      chrome.scripting.executeScript(
-        {
-          target: { tabId: tabs[0].id },
-          func: () => JSON.stringify(window.dataLayer, null, 2),
-        },
-        (results) => {
-          datalayerContent.textContent =
-            results && results[0] && results[0].result
-              ? results[0].result
-              : "dataLayer não encontrado ou vazio.";
+  // Função para exibir comportamentos (Behaviors)
+  function displayBehaviorRequests() {
+    behaviorsOutput.textContent = "Recarregando comportamentos...";
+    behaviorsOutput.innerHTML = ""; // Limpar conteúdo anterior
+
+    chrome.storage.local.get("networkRequests", function (data) {
+      const requests = data.networkRequests || [];
+
+      if (requests.length === 0) {
+        behaviorsOutput.innerHTML = "<p>Nenhum comportamento capturado.</p>";
+        return;
+      }
+
+      requests.forEach((request) => {
+        const parsedPayload = JSON.parse(request.requestBody);
+
+        if (parsedPayload && parsedPayload.behaviors) {
+          const behaviors = parsedPayload.behaviors;
+
+          behaviors.forEach((behavior) => {
+            const requestElement = document.createElement("div");
+            requestElement.classList.add("behavior-request");
+
+            // Exibir apenas os campos de clientId, customerId, metadata, personId, referer, url
+            requestElement.innerHTML = `
+              <div><strong>clientId:</strong> ${behavior.clientId}</div>
+              <div><strong>customerId:</strong> ${behavior.customerId}</div>
+              <div><strong>metadata:</strong> 
+                <pre>${JSON.stringify(behavior.metadata, null, 2)}</pre>
+              </div>
+              <div><strong>personId:</strong> ${behavior.personId}</div>
+              <div><strong>referer:</strong> ${behavior.referer}</div>
+              <div><strong>url:</strong> ${decodeURIComponent(
+                behavior.url
+              )}</div>
+            `;
+
+            behaviorsOutput.appendChild(requestElement);
+          });
         }
-      );
+      });
     });
   }
 
+  // Função para exibir os workflows capturados
+  function displayWorkflowRequests() {
+    workflowOutput.textContent = "Recarregando workflows...";
+    workflowOutput.innerHTML = ""; // Limpar conteúdo anterior
+
+    chrome.storage.local.get("workflowRequests", function (data) {
+      const requests = data.workflowRequests || [];
+
+      if (requests.length === 0) {
+        workflowOutput.innerHTML = "<p>Nenhum workflow capturado.</p>";
+        return;
+      }
+
+      requests.forEach((request) => {
+        const urlParams = new URL(request.url).searchParams;
+
+        const workflowElement = document.createElement("div");
+        workflowElement.innerHTML = `
+          <p><strong>i:</strong> ${urlParams.get("i")}</p>
+          <p><strong>data:</strong> ${decodeURIComponent(
+            urlParams.get("data")
+          )}</p>
+          <p><strong>rand:</strong> ${urlParams.get("rand")}</p>
+          <p><strong>rand2:</strong> ${urlParams.get("rand2")}</p>
+        `;
+        workflowOutput.appendChild(workflowElement);
+      });
+    });
+  }
+
+  // Botão de recarregar workflows
+  const reloadWorkflowButton = document.getElementById("reload-workflow");
+  reloadWorkflowButton.addEventListener("click", displayWorkflowRequests);
+
+  // Função para limpar as requisições de Workflow e Behaviors
   clearButton.addEventListener("click", function () {
     chrome.storage.local.set(
-      { requests: [], integrationFound: false },
+      { networkRequests: [], workflowRequests: [] },
       function () {
-        displayRequests();
+        behaviorsOutput.innerHTML = "<p>Nenhum comportamento capturado.</p>";
+        workflowOutput.innerHTML = "<p>Nenhum workflow capturado.</p>";
       }
     );
   });
 
-  displayRequests();
-  checkGTM();
-  getDataLayer();
+  // Inicialização ao carregar o popup
+  displayWorkflowRequests();
+  displayBehaviorRequests();
 });

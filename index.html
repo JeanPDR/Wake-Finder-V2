@@ -3,7 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <link rel="stylesheet" href="style.css" />
     <title>Wake Finder</title>
   </head>
@@ -23,14 +22,22 @@
         <p id="socl-status">Verificando integrações...</p>
       </div>
 
-      <div id="requests">
+      <!-- Nova seção para Behaviors -->
+      <div id="behaviors-container">
         <h2>Behaviors</h2>
+        <div id="requests"></div>
+        <div id="behaviors-output"></div>
+        <button id="clear-behaviors">Limpar Behaviors</button>
+        <!-- Botão para limpar Behaviors -->
+        <button id="reload-behaviors">Atualizar Behaviors</button>
       </div>
 
-      <!-- Nova seção para Workflow (_work) -->
+      <!-- Nova seção para Workflow (_workflow) -->
       <div id="workflow-container">
         <h2>Workflow</h2>
-        <p id="work-status">Verificando workflow...</p>
+        <div id="workflow-output"></div>
+        <!-- Botão para recarregar workflow -->
+        <button id="reload-workflow">Atualizar Workflow</button>
       </div>
 
       <!-- Seção GTM -->
@@ -40,36 +47,16 @@
       </div>
 
       <!-- Seção DataLayer -->
-      <div id="datalayer-container">
-        <header>
-          <div id="headline">Datalayer</div>
-          <div id="icons">
-            <span id="feedback"></span>
-          </div>
-        </header>
-        <main>
-          <div id="loadercontainer">
-            <div id="loader"></div>
-          </div>
-
-          <!-- Campo de filtro para o DataLayer -->
-          <div>
-            <input
-              type="text"
-              id="filter-input"
-              placeholder="Digite o filtro (ex: 'ecommerce.items')"
-            />
-            <button id="apply-filter">Aplicar Filtro</button>
-          </div>
-
-          <!-- Exibição do DataLayer -->
-          <div id="datalayer-output"></div>
-        </main>
-      </div>
+      <h3>Datalayer</h3>
+      <button id="loadDataLayerButton">Carregar DataLayer</button>
+      <div id="loader">Carregando...</div>
+      <main id="content"></main>
     </div>
 
+    <script type="module" src="./main.js"></script>
     <script src="./DataLayer/renderjson.js"></script>
     <script src="./DataLayer/popup.js"></script>
     <script src="./background.js"></script>
+    <script src="./popup.js"></script>
   </body>
 </html>

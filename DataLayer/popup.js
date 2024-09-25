@@ -7,23 +7,31 @@ const keys = [
 ];
 let global = {};
 
-(() => {
-  // get saved data layer names
-  chrome.storage.sync.get(keys, (values) => {
-    const names = Object.values(values).filter((value) => {
-      if (value) return value;
-    });
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      var activeTab = tabs[0];
-      chrome.tabs.sendMessage(activeTab.id, {
-        message: "dataLayerNames",
-        names: names,
+document.addEventListener("DOMContentLoaded", function () {
+  const loadDataLayerButton = document.getElementById("loadDataLayerButton");
+  const loader = document.getElementById("loader");
+  const content = document.getElementById("content");
+
+  // Ação ao clicar no botão de carregar DataLayer
+  loadDataLayerButton.addEventListener("click", function () {
+    loader.style.display = "block"; // Mostrar o "Carregando..."
+    content.innerHTML = ""; // Limpar conteúdo antigo
+
+    // Executar o processo de obtenção dos DataLayer names
+    chrome.storage.sync.get(keys, (values) => {
+      const names = Object.values(values).filter((value) => value);
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          message: "dataLayerNames",
+          names: names,
+        });
       });
     });
   });
 
-  // display found data layer information
+  // Lidar com a resposta que contém os dados do DataLayer
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    loader.style.display = "none"; // Ocultar o "Carregando..."
     global.url = message.url;
     global.data = message.data;
     global.index = 0;
@@ -40,10 +48,9 @@ let global = {};
 
     global.container = document.querySelector("#data");
     global.container.appendChild(
-      renderjson
-        .set_icons("+", "-")
-        //.set_max_string_length(100)
-        .set_show_to_level("all")(JSON.parse(global.data[global.index][1]))
+      renderjson.set_icons("+", "-").set_show_to_level("all")(
+        JSON.parse(global.data[global.index][1])
+      )
     );
 
     for (i in global.data) {
@@ -52,14 +59,7 @@ let global = {};
 
     addListeners();
   });
-})();
-
-// add link to options page
-(() => {
-  var optionsUrl = chrome.runtime.getURL("../backend/options.html");
-  var content = '<a href="' + optionsUrl + '" target="_blank">&#9776;</a>';
-  document.querySelector("#options").innerHTML = content;
-})();
+});
 
 /**
  * HELPER FUNCTIONS
@@ -112,8 +112,6 @@ function writeFound() {
 }
 
 function writeContent(content) {
-  let div = document.getElementById("loadercontainer");
-  div.parentNode.removeChild(div);
   document.querySelector("main").innerHTML = content;
 }
 
@@ -154,8 +152,9 @@ function changeObject() {
   }
   global.container.innerHTML = "";
   global.container.appendChild(
-    renderjson //.set_icons('+', '-')
-      .set_show_to_level("all")(JSON.parse(global.data[global.index][1]))
+    renderjson.set_show_to_level("all")(
+      JSON.parse(global.data[global.index][1])
+    )
   );
 }
 
@@ -183,7 +182,8 @@ function handleSyntax() {
   }
   global.container.innerHTML = "";
   global.container.appendChild(
-    renderjson //.set_icons('+', '-')
-      .set_show_to_level(level)(JSON.parse(global.data[global.index][1]))
+    renderjson.set_show_to_level(level)(
+      JSON.parse(global.data[global.index][1])
+    )
   );
 }
